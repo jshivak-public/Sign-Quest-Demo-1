@@ -1,85 +1,74 @@
-ASL ABC Recognition Pipeline for Sign Quest
+# ASL ABC Recognition Pipeline for Sign Quest
 
-This project implement a full end-to-end American Sign Language (ASL) alphabet recognition pipeline developed for the Sign Quest startup. It combines real-time hand tracking, classical machine learning, and webcam-based inference to recognize ASL letters in a lightweight and explainable way.
+This project implement a full end-to-end American Sign Language (ASL) alphabet recognition pipeline developed for Sign Quest, an ASL ed-tech startup focussed on providing DHH families and educators with accesible resources to teach students American Sign Language.
 
-The system is designed to support Sign Quest’s educational tools by enabling real-time gesture recognition that can later be integrated into games, learning platforms, and interactive demos.
+The system is designed to support Sign Quest’s educational tools by enabling real-time gesture recognition, interactive demos, and rapid prototyping of ASL-based learning experiences.
 
-Data Collection
+## Overview
 
-Uses MediaPipe Hands to extract 21 hand landmarks per frame.
+The pipeline follows a simple and transparent workflow:
 
-Each frame is converted into a 63-dimensional feature vector (x, y, z for each landmark).
+- Capture hand pose data using a webcam or pre-recorded video
+- Extract 3D hand landmark features using MediaPipe
+- Train a lightweight machine learning classifier on labeled ASL data
+- Run real-time inference with confidence-based unknown rejection
 
-Supports both:
+The focus of this project is clarity and reliability rather than black-box deep learning models, making it suitable for education-focused applications and live demonstrations.
 
-Webcam-based data collection with optional key labeling
+## Data Collection
 
-Pre-recorded video input with automatic class labeling
+- Uses MediaPipe Hands to extract 21 hand landmarks per frame.
+- Each frame is converted into a 63-dimensional feature vector (x, y, z for each landmark).
+- Only a single hand is tracked at a time to reduce ambiguity.
+- Supports both:
+  - Webcam-based data collection with optional key labeling
+  - Pre-recorded video input with automatic class labeling
+- Samples are appended row-by-row to a CSV dataset.
+- Data is stored in `asl_abc_data.csv` for easy inspection and reuse.
 
-All collected samples are stored in a CSV file (asl_abc_data.csv) to keep the dataset transparent and easy to audit.
+## Model Training
 
-Model Training
+- Trains a Logistic Regression classifier using scikit-learn.
+- A preprocessing and model pipeline is used to ensure consistent inference.
+- Training includes:
+  - Feature normalization using `StandardScaler`
+  - Class-balanced logistic regression to handle uneven datasets
+- The dataset is split into training and test sets for evaluation.
+- A classification report is printed after training to measure performance.
+- The trained model, class labels, and configuration settings are saved to `model.pk1`.
 
-Trains a Logistic Regression classifier using scikit-learn.
+## Real-Time Inference
 
-Training pipeline includes:
+- Performs live ASL letter recognition using a webcam feed.
+- Displays:
+  - Detected hand landmarks
+  - Predicted ASL letter
+  - Model confidence score
+- Implements confidence-based unknown detection:
+  - If the highest prediction probability falls below a threshold, the output is labeled as `unknown`.
+  - This helps reject unclear or partially formed signs.
+- The confidence threshold can be adjusted at runtime using keyboard input.
+- Raw and annotated frames are displayed side-by-side to support debugging and demos.
 
-Feature normalization with StandardScaler
+## Design Decisions
 
-Class-balanced logistic regression for improved stability
+- Uses classical machine learning instead of deep learning to remain interpretable.
+- Relies on MediaPipe landmarks rather than raw image pixels.
+- Keeps the data pipeline CSV-based to simplify iteration and debugging.
+- Designed for real-time performance on consumer hardware.
 
-Automatically splits data into training and test sets and prints a classification report.
+## Tech Stack
 
-The trained model, class list, and confidence threshold are saved together in a serialized bundle (model.pk1) for consistent inference.
+- Python
+- OpenCV
+- MediaPipe
+- NumPy
+- Pandas
+- Scikit-learn
+- cvzone
 
-Real-Time Inference
+## Notes
 
-Runs live inference from a webcam feed.
-
-Displays:
-
-Detected hand landmarks
-
-Predicted ASL character
-
-Confidence score for the prediction
-
-Includes an unknown-class rejection mechanism:
-
-If the highest prediction probability falls below a configurable threshold, the output is labeled as unknown.
-
-The threshold can be adjusted at runtime using keyboard input.
-
-Shows raw and annotated frames side-by-side to help with debugging and demos.
-
-Key Design Goals
-
-Real-time performance on consumer hardware
-
-Explainable, non–black-box ML for demos and education
-
-Simple data pipeline that supports iteration and expansion
-
-Easy integration into Sign Quest prototypes and presentations
-
-Tech Stack
-
-Python
-
-OpenCV
-
-MediaPipe
-
-NumPy and Pandas
-
-Scikit-learn
-
-cvzone
-
-Notes
-
-Its designed for single-hand ASL alphabet recognition.
-
-The pipeline can be extended to additional signs, gestures, or multi-hand inputs as Sign Quest evolves.
-
-This project serves as a strong baseline system rather than a deep learning solution, prioritizing clarity and control over complexity.
+- This system is currently designed for single-hand ASL alphabet recognition.
+- Additional signs, gestures, or multi-hand support can be added as Sign Quest expands.
+- The project serves as a baseline recognition system that can be integrated into future Sign Quest products and demos.
